@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developmental Screening Results</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f8fafc;
+        }
+
+        .container {
+            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .risk-low {
+            background: #10b981;
+        }
+
+        .risk-moderate {
+            background: #f59e0b;
+        }
+
+        .risk-high {
+            background: #ef4444;
+        }
+
+        .section {
+            padding: 25px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .domain-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #e5e7eb;
+        }
+
+        .domain-flagged {
+            border-left-color: #ef4444;
+        }
+
+        .score-bar {
+            background: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .score-low {
+            background: #10b981;
+        }
+
+        .score-moderate {
+            background: #f59e0b;
+        }
+
+        .score-high {
+            background: #ef4444;
+        }
+
+        .next-steps {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .disclaimer {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .footer {
+            background: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        h3 {
+            font-size: 16px;
+        }
+
+        p {
+            margin: 0 0 10px 0;
+        }
+
+        .highlight {
+            background: #dbeafe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>👶 Your Child's Developmental Screening</h1>
+            <p>Assessment completed on {{date}}</p>
+            <div class="risk-badge risk-{{overallRiskLower}}">
+                {{overallRiskUpper}} RISK LEVEL
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="section">
+            <h2>📊 Quick Summary</h2>
+            <p>Hello {{name}},</p>
+            <p>Thank you for completing our developmental screening. Here's what we found:</p>
+
+            {{#hasFlaggedDomains}}
+            <p><strong>{{flaggedCount}} out of 4 areas</strong> may benefit from professional attention.</p>
+            {{/hasFlaggedDomains}}
+            {{^hasFlaggedDomains}}
+            <p>All areas appear to be developing <strong>within typical ranges</strong>.</p>
+            {{/hasFlaggedDomains}}
+        </div>
+
+        <!-- Domain Scores -->
+        <div class="section">
+            <h2>🎯 Domain Breakdown</h2>
+            {{#domains}}
+            <div class="domain-card {{cardClass}}">
+                <h3>{{name}}</h3>
+                <div class="score-bar">
+                    <div class="score-fill {{barClass}}" style="width: {{percentage}}%"></div>
+                </div>
+                <p><strong>{{score}}/{{maxScore}}</strong> {{status}}</p>
+            </div>
+            {{/domains}}
+        </div>
+
+        <!-- Next Steps -->
+        <div class="section">
+            <h2>🚀 What to Do Next</h2>
+            <div class="next-steps">
+                {{#recommendations}}
+                <div class="action-item">
+                    <div class="action-icon" style="background: #10b981;">
+                        ✓
+                    </div>
+                    <div>
+                        <p><strong>{{.}}</strong></p>
+                    </div>
+                </div>
+                {{/recommendations}}
+            </div>
+        </div>
+
+        <!-- Detailed Message -->
+        {{#detailed_message}}
+        <div class="section">
+            <h2>💬 Understanding Your Results</h2>
+            <p>{{.}}</p>
+        </div>
+        {{/detailed_message}}
+
+        <!-- Disclaimer -->
+        <div class="section">
+            <div class="disclaimer">
+                <h3>⚠️ Important Reminder</h3>
+                <p><strong>This screening tool is NOT a medical diagnosis.</strong> It provides general guidance to help
+                    you understand if professional evaluation may be beneficial. Always consult with qualified
+                    healthcare professionals for proper assessment and guidance.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Free Developmental Screening Tool</strong></p>
+            <p>For educational purposes only • Not a substitute for professional medical advice</p>
+            <p>Generated on {{date}}</p>
+        </div>
+    </div>
+</body>
+
+</html>

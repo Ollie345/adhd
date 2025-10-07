@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RiskLevel {
+  Low
+  Moderate
+  High
+}
+
+model ADHDAssessment {
+  id                     Int      @id @default(autoincrement())
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  fullName               String   @map("full_name")
+  email                  String   @unique @map("email")
+  phone                  String?  @map("phone")
+  consentGiven           Boolean  @default(false) @map("consent_given")
+  consentTimestamp       DateTime? @map("consent_timestamp")
+  age                    Int      @map("age")
+  maritalStatus          String   @map("marital_status")
+  medicalConditions      Json     @default("[]") @map("medical_conditions")
+  medications            String?  @map("medications")
+  familyHistory          String?  @map("family_history")
+  // Developmental screening responses (all questions stored as JSON)
+  responses              Json     @map("responses")
+  // Domain scores
+  behavioralScore        Int      @default(0) @map("behavioral_score")
+  cognitiveScore         Int      @default(0) @map("cognitive_score")
+  motorSkillsScore       Int      @default(0) @map("motor_skills_score")
+  languageScore          Int      @default(0) @map("language_score")
+  // Assessment results
+  overallRisk            RiskLevel   @map("overall_risk")
+  flaggedDomains         Json     @default("[]") @map("flagged_domains")
+  message                String   @default("")
+  detailedMessage        String   @default("")
+  recommendations        Json     @default("[]")
+  assessmentType         String   @default("developmental_screening") @map("assessment_type")
+  completedAt            DateTime? @map("completed_at")
+  leadStatus             String   @default("new") @map("lead_status")
+  leadSource             String   @default("adhd_assessment") @map("lead_source")
+  followUpNotes          String?  @map("follow_up_notes")
+
+  @@map("adhd_assessment")
+}
