@@ -50,8 +50,6 @@
     "next": "15.2.4",
     "next-themes": "latest",
     "nodemailer": "^7.0.6",
-  "@sparticuz/chromium": "latest",
-  "puppeteer-core": "^24.22.3",
     "react": "^19",
     "react-day-picker": "latest",
     "react-dom": "^19",

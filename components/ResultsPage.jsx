@@ -140,7 +140,7 @@ const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
               <div className="w-full bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                 <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
                 <p className="text-green-800 font-semibold">Report Sent Successfully!</p>
-                <p className="text-green-600 text-sm">Check your email for the detailed PDF report</p>
+                <p className="text-green-600 text-sm">Check your email for the detailed report</p>
               </div>
             ) : (
               <Button
@@ -156,7 +156,7 @@ const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
                 ) : (
                   <>
                     <Mail className="h-4 w-4" />
-                    Email Detailed Report (PDF)
+                    Email Detailed Report
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
@@ -178,7 +178,7 @@ const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
       </Card>
 
       <p className="text-center text-xs sm:text-sm text-gray-500 px-4">
-        📧 Click "Email Detailed Report" to receive a comprehensive PDF with all results and recommendations.
+        📧 Click "Email Detailed Report" to receive a comprehensive report with all results and recommendations.
       </p>
     </div>
   )

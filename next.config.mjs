@@ -10,7 +10,7 @@ const nextConfig = {
     unoptimized: true,
   },
   outputFileTracingIncludes: {
-    'app/api/send-report/route.js': ['templates/**'],
+    'app/api/send-report/route.js': ['templates/report-email.html'],
   },
 }
 

@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
-import chromium from '@sparticuz/chromium'
-import puppeteer from 'puppeteer-core'
 import path from 'path'
 import fs from 'fs'
 import mustache from 'mustache'
@@ -96,45 +94,14 @@ export async function POST(req) {
             flaggedCount: (templateData.flaggedDomains || []).length
         }
 
-        // Read templates
-        const emailTemplatePath = path.join(templatesDir, 'report-email.html')
-        const pdfTemplatePath = path.join(templatesDir, 'report-pdf.html')
-
-        const emailTemplateSource = fs.readFileSync(emailTemplatePath, 'utf8')
-        const pdfTemplateSource = fs.readFileSync(pdfTemplatePath, 'utf8')
+// Read email template
+const emailTemplatePath = path.join(templatesDir, 'report-email.html')
+const emailTemplateSource = fs.readFileSync(emailTemplatePath, 'utf8')
 
         // Generate HTML for email
         const emailHtml = mustache.render(emailTemplateSource, processedData)
 
-        // Generate PDF
-        let pdfBuffer = null
-        try {
-            const browser = await puppeteer.launch({
-                args: chromium.args,
-                executablePath: await chromium.executablePath(),
-                headless: true,
-            })
-
-            const page = await browser.newPage()
-            const pdfHtml = mustache.render(pdfTemplateSource, processedData)
-
-            await page.setContent(pdfHtml, { waitUntil: 'networkidle0' })
-            pdfBuffer = await page.pdf({
-                format: 'A4',
-                printBackground: true,
-                margin: {
-                    top: '0.5in',
-                    right: '0.5in',
-                    bottom: '0.5in',
-                    left: '0.5in'
-                }
-            })
-
-            await browser.close()
-        } catch (pdfError) {
-            console.error('PDF generation error:', pdfError)
-            // Continue without PDF if generation fails
-        }
+        // PDF generation removed: email-only flow
 
         // Send email
         if (isDevelopment) {
@@ -142,7 +109,7 @@ export async function POST(req) {
             console.log('📧 DEVELOPMENT MODE - Email would be sent:')
             console.log('To:', email)
             console.log('Subject: Your Child\'s Developmental Screening Results')
-            console.log('Has PDF attachment:', !!pdfBuffer)
+            // No PDF attachment in email-only mode
             console.log('Risk Level:', overallRisk)
             console.log('Flagged Domains:', flaggedDomains?.length || 0)
 
@@ -162,12 +129,7 @@ export async function POST(req) {
             from: smtpFrom || `"Developmental Screening" <${emailConfig.auth.user}>`,
             to: email,
             subject: `Your Child's Developmental Screening Results - ${overallRisk} Risk Level`,
-            html: emailHtml,
-            attachments: pdfBuffer ? [{
-                filename: `developmental-report-${new Date().toISOString().split('T')[0]}.pdf`,
-                content: pdfBuffer,
-                contentType: 'application/pdf'
-            }] : []
+            html: emailHtml
         }
 
         const info = await transporter.sendMail(mailOptions)
@@ -178,7 +140,7 @@ export async function POST(req) {
             success: true,
             message: 'Report sent successfully',
             messageId: info.messageId,
-            hasAttachment: !!pdfBuffer
+            hasAttachment: false
         })
 
     } catch (error) {
