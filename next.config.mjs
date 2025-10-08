@@ -9,6 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  outputFileTracingIncludes: {
+    'app/api/send-report/route.js': ['templates/**'],
+  },
 }
 
 export default nextConfig

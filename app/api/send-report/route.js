@@ -1,20 +1,23 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
-import puppeteer from 'puppeteer'
+import chromium from '@sparticuz/chromium'
+import puppeteer from 'puppeteer-core'
 import path from 'path'
 import fs from 'fs'
 import mustache from 'mustache'
 
+export const runtime = 'nodejs'
+
 const templatesDir = path.join(process.cwd(), 'templates')
 
-// Email configuration - in production, use environment variables
+// Email configuration - use environment variables only in production
 const emailConfig = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
     secure: false,
     auth: {
-        user: process.env.SMTP_USER || 'morgandavid261@gmail.com',
-        pass: process.env.SMTP_PASS || 'eyjufaxehzzmdhzu'
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 }
 
@@ -107,8 +110,9 @@ export async function POST(req) {
         let pdfBuffer = null
         try {
             const browser = await puppeteer.launch({
+                args: chromium.args,
+                executablePath: await chromium.executablePath(),
                 headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
             })
 
             const page = await browser.newPage()
