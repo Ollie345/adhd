@@ -1,11 +1,13 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import LandingPage from "./LandingPage"
 import QuestionPage from "./QuestionPage"
 import PersonalInfoPage from "./PersonalInfoPage"
 import ResultsPage from "./ResultsPage"
 import DomainProgress from "./DomainProgress"
+import LoadingCube from "./LoadingCube"
 
 const questions = {
   // Behavioral (Autism Spectrum)
@@ -216,7 +218,10 @@ const HealthAssessmentFlow = () => {
       }
 
       setResults(result)
-      setCurrentStep("results")
+      setCurrentStep("loading")
+      setTimeout(() => {
+        setCurrentStep("results")
+      }, 15000)
     } catch (err) {
       console.error("Submission error:", err)
       setError(err.message || "Something went wrong. Please try again.")
@@ -253,16 +258,33 @@ const HealthAssessmentFlow = () => {
     return (
       <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 px-4">
         <DomainProgress steps={steps} />
-        <QuestionPage
-          question={questions[currentQuestionKey]}
-          questionKey={currentQuestionKey}
-          currentIndex={currentQuestionIndex}
-          totalQuestions={totalQuestions}
-          response={responses[currentQuestionKey] || ""}
-          onResponse={handleQuestionResponse}
-          onNext={handleNextQuestion}
-          onPrevious={handlePreviousQuestion}
-        />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentQuestionKey}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <QuestionPage
+              question={questions[currentQuestionKey]}
+              questionKey={currentQuestionKey}
+              currentIndex={currentQuestionIndex}
+              totalQuestions={totalQuestions}
+              response={responses[currentQuestionKey] || ""}
+              onResponse={handleQuestionResponse}
+              onNext={handleNextQuestion}
+              onPrevious={handlePreviousQuestion}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    )
+  }
+  if (currentStep === "loading") {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-4">
+        <LoadingCube />
       </div>
     )
   }

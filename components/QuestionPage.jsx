@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
 
 const QuestionPage = ({
   question,
@@ -26,6 +27,16 @@ const QuestionPage = ({
         <span>{Math.round(progress)}% complete</span>
       </div>
 
+      {/* Animated Progress Bar */}
+      <div className="h-2 bg-gray-200 rounded">
+        <motion.div
+          className="h-2 bg-blue-600 rounded"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        />
+      </div>
+
       {/* Question Card */}
       <Card>
         <CardHeader className="pb-4 sm:pb-6">
@@ -40,8 +51,10 @@ const QuestionPage = ({
               { value: "3", label: "Often" },
               { value: "4", label: "Always/Very Frequently" }
             ].map((option) => (
-              <label
+              <motion.label
                 key={option.value}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 className={`flex items-center p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${response === option.value ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
                   }`}
               >
@@ -62,30 +75,34 @@ const QuestionPage = ({
                 <span className="text-base sm:text-lg font-medium">
                   {option.value} - {option.label}
                 </span>
-              </label>
+              </motion.label>
             ))}
           </div>
 
           {/* Navigation */}
           <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-4">
-            <Button
-              onClick={onPrevious}
-              variant="outline"
-              disabled={currentIndex === 0}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
-            </Button>
+            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={onPrevious}
+                variant="outline"
+                disabled={currentIndex === 0}
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Previous
+              </Button>
+            </motion.div>
 
-            <Button
-              onClick={onNext}
-              disabled={!response}
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-            >
-              {currentIndex === totalQuestions - 1 ? "Continue to Results" : "Next"}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={onNext}
+                disabled={!response}
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+              >
+                {currentIndex === totalQuestions - 1 ? "Continue to Results" : "Next"}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
           </div>
         </CardContent>
       </Card>

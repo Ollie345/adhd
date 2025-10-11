@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, Mail, ArrowRight, BarChart3, AlertCircle, Loader2 } from "lucide-react"
+import { motion } from "framer-motion"
 
 const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
   const [emailSending, setEmailSending] = useState(false)
@@ -96,8 +97,14 @@ const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
           {/* Domain Scores */}
           <div className="space-y-3">
             <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Domain Scores:</h4>
-            {result.domainScores && Object.entries(result.domainScores).map(([domain, score]) => (
-              <div key={domain} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            {result.domainScores && Object.entries(result.domainScores).map(([domain, score], idx) => (
+              <motion.div
+                key={domain}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05, duration: 0.25 }}
+                className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+              >
                 <span className={`text-sm sm:text-base ${getDomainColor(domain, result.flaggedDomains)}`}>
                   {domain}
                 </span>
@@ -105,7 +112,7 @@ const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
                   {score || 0}/{maxScores[domain] || 24}
                   {result.flaggedDomains && result.flaggedDomains.includes(domain) && " ⚠️"}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -137,30 +144,36 @@ const ResultsPage = ({ result, onEmailResults, onStartOver }) => {
           {/* Action Buttons */}
           <div className="space-y-3">
             {emailSent ? (
-              <div className="w-full bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="w-full bg-green-50 border border-green-200 rounded-lg p-4 text-center"
+              >
                 <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
                 <p className="text-green-800 font-semibold">Report Sent Successfully!</p>
                 <p className="text-green-600 text-sm">Check your email for the detailed report</p>
-              </div>
+              </motion.div>
             ) : (
-              <Button
-                onClick={handleSendReport}
-                disabled={emailSending}
-                className="w-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2 text-sm sm:text-base py-2 sm:py-3 disabled:opacity-50"
-              >
-                {emailSending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating Report...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="h-4 w-4" />
-                    Email Detailed Report
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
+              <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  onClick={handleSendReport}
+                  disabled={emailSending}
+                  className="w-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2 text-sm sm:text-base py-2 sm:py-3 disabled:opacity-50"
+                >
+                  {emailSending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating Report...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="h-4 w-4" />
+                      Email Detailed Report
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </motion.div>
             )}
 
             {emailError && (
