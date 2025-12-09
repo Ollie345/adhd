@@ -159,36 +159,67 @@ export async function POST(req: Request) {
 </ul>
 `.trim()
 
-    // Non-blocking Odoo sync
-    ;(async () => {
-      try {
-        const uid = await odooAuthenticate()
-        if (!uid) return
+    // Odoo sync with timeout wrapper
+    try {
+      // Check if Odoo env vars are configured
+      if (!process.env.ODOO_URL || !process.env.ODOO_DB || !process.env.ODOO_USERNAME || !process.env.ODOO_PASSWORD) {
+        console.warn("[Odoo Sync] Skipping - Odoo environment variables not configured")
+      } else {
+        console.log("[Odoo Sync] Starting Odoo lead creation...")
+        
+        // Wrap Odoo sync in a timeout promise
+        const odooSyncPromise = (async () => {
+          const uid = await odooAuthenticate()
+          if (!uid) {
+            console.error("[Odoo Sync] Authentication failed, aborting")
+            return
+          }
 
-        // Ensure contact by email
-        const partnerId = await ensurePartner(uid, body.email as string, body.name as string)
+          console.log("[Odoo Sync] Authentication successful, UID:", uid)
 
-        // Ensure tags
-        const defaultTagId = await ensureTag(uid, "adhd_assessment")
-        const riskTagId = await ensureTag(uid, `risk_${String(result.overallRisk).toLowerCase()}`)
-        const tagIds = [defaultTagId, riskTagId].filter(Boolean) as number[]
+          // Ensure contact by email
+          console.log("[Odoo Sync] Ensuring partner exists...")
+          const partnerId = await ensurePartner(uid, body.email as string, body.name as string)
+          if (partnerId) {
+            console.log("[Odoo Sync] Partner ID:", partnerId)
+          }
 
-        // Create lead with description (Internal Notes)
-        const leadId = await createLead(uid, {
-          name: `Developmental Screening - ${body.name}`,
-          contact_name: body.name,
-          email_from: body.email,
-          partner_id: partnerId || undefined,
-          tag_ids: tagIds.length ? [[6, 0, tagIds]] : undefined,
-          description: descriptionHTML,
+          // Ensure tags
+          console.log("[Odoo Sync] Ensuring tags exist...")
+          const defaultTagId = await ensureTag(uid, "adhd_assessment")
+          const riskTagId = await ensureTag(uid, `risk_${String(result.overallRisk).toLowerCase()}`)
+          const tagIds = [defaultTagId, riskTagId].filter(Boolean) as number[]
+          console.log("[Odoo Sync] Tag IDs:", tagIds)
+
+          // Create lead with description (Internal Notes)
+          console.log("[Odoo Sync] Creating lead...")
+          const leadId = await createLead(uid, {
+            name: `Developmental Screening - ${body.name}`,
+            contact_name: body.name,
+            email_from: body.email,
+            partner_id: partnerId || undefined,
+            tag_ids: tagIds.length ? [[6, 0, tagIds]] : undefined,
+            description: descriptionHTML,
+          })
+
+          console.log(`[Odoo Sync] Successfully created lead with ID: ${leadId}`)
+        })()
+
+        // Race against 20-second timeout
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error("Odoo sync timeout after 20 seconds"))
+          }, 20000)
         })
 
-        // Optional: also post the HTML in chatter as a note
-        // await postNote(uid, leadId, descriptionHTML)
-      } catch (err) {
-        console.error("Odoo sync error:", err)
+        await Promise.race([odooSyncPromise, timeoutPromise])
+        console.log("[Odoo Sync] Completed successfully")
       }
-    })()
+    } catch (err) {
+      // Log error but don't fail the request
+      console.error("[Odoo Sync] Error (non-blocking):", err)
+      // Continue - assessment was saved to DB, user gets response
+    }
 
     return NextResponse.json(
       {
